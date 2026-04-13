@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: labs_analyzer
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:postgres@postgres/labs_analyzer
+    env_file:
+      - backend/.env
+    depends_on:
+      - redis
+      - postgres
+    command: npx tsx backend/src/index.ts
+
+  worker:
+    build: .
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:postgres@postgres/labs_analyzer
+    env_file:
+      - backend/.env
+    depends_on:
+      - redis
+      - postgres
+    command: npx tsx backend/src/worker.ts
+
+volumes:
+  redis_data:
+  pg_data:

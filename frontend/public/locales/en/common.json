@@ -1,0 +1,74 @@
+{
+  "title": "Labs Analyzer",
+  "tagline": "Understand your lab results instantly",
+  "upload": {
+    "heading": "Upload your lab report",
+    "drag": "Drag & drop your PDF here",
+    "or": "or",
+    "browse": "Browse file",
+    "hint": "PDF only · Max 10 MB",
+    "analyzing": "Analyzing...",
+    "submit": "Analyze Report",
+    "language_label": "Report language"
+  },
+  "progress": {
+    "queued": "Queued for processing...",
+    "extracting": "Reading your lab report...",
+    "normalizing": "Standardizing values...",
+    "analyzing": "Performing clinical analysis...",
+    "explaining": "Generating your summary...",
+    "qa_check": "Running quality check...",
+    "done": "Analysis complete",
+    "failed": "Analysis failed"
+  },
+  "results": {
+    "summary_heading": "Your Results Summary",
+    "tests_heading": "Detailed Results",
+    "urgent_heading": "Action Required",
+    "total_tests": "Total Tests",
+    "abnormal": "Abnormal",
+    "critical": "Critical",
+    "qa_score": "QA Score",
+    "processing_time": "Processed in",
+    "disclaimer_heading": "Important Notice",
+    "print": "Print",
+    "new_report": "Analyze Another Report",
+    "expand": "View explanation",
+    "collapse": "Hide",
+    "confidence": "Confidence",
+    "reference": "Reference range",
+    "your_value": "Your value",
+    "next_steps": "What to do",
+    "urgency": {
+      "routine": "Routine",
+      "soon": "See doctor soon",
+      "urgent": "See doctor urgently",
+      "emergency": "Go to ER now"
+    },
+    "severity": {
+      "none": "Normal",
+      "mild": "Mild",
+      "moderate": "Moderate",
+      "severe": "Severe"
+    },
+    "risk": {
+      "low": "Overall risk: Low",
+      "medium": "Overall risk: Medium",
+      "high": "Overall risk: High",
+      "critical": "Overall risk: Critical"
+    }
+  },
+  "errors": {
+    "not_pdf": "Please upload a PDF file",
+    "too_large": "File exceeds 10 MB limit",
+    "upload_failed": "Upload failed. Please try again.",
+    "no_tests": "No lab tests found in this PDF",
+    "generic": "Something went wrong. Please try again."
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "ar": "العربية",
+    "vi": "Tiếng Việt"
+  }
+}

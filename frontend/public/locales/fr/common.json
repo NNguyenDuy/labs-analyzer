@@ -1,0 +1,74 @@
+{
+  "title": "Labs Analyzer",
+  "tagline": "Comprenez vos résultats d'analyses instantanément",
+  "upload": {
+    "heading": "Téléchargez votre bilan",
+    "drag": "Glissez-déposez votre PDF ici",
+    "or": "ou",
+    "browse": "Parcourir",
+    "hint": "PDF uniquement · Max 10 Mo",
+    "analyzing": "Analyse en cours...",
+    "submit": "Analyser le bilan",
+    "language_label": "Langue du bilan"
+  },
+  "progress": {
+    "queued": "En attente...",
+    "extracting": "Lecture du bilan...",
+    "normalizing": "Standardisation des valeurs...",
+    "analyzing": "Analyse clinique...",
+    "explaining": "Génération des explications...",
+    "qa_check": "Vérification qualité...",
+    "done": "Analyse terminée",
+    "failed": "Analyse échouée"
+  },
+  "results": {
+    "summary_heading": "Résumé de vos résultats",
+    "tests_heading": "Résultats détaillés",
+    "urgent_heading": "Action requise",
+    "total_tests": "Total analyses",
+    "abnormal": "Anormaux",
+    "critical": "Critiques",
+    "qa_score": "Score QA",
+    "processing_time": "Traité en",
+    "disclaimer_heading": "Avis important",
+    "print": "Imprimer",
+    "new_report": "Analyser un autre bilan",
+    "expand": "Voir l'explication",
+    "collapse": "Réduire",
+    "confidence": "Confiance",
+    "reference": "Valeurs de référence",
+    "your_value": "Votre valeur",
+    "next_steps": "Que faire",
+    "urgency": {
+      "routine": "Routine",
+      "soon": "Consulter bientôt",
+      "urgent": "Consulter en urgence",
+      "emergency": "Aller aux urgences"
+    },
+    "severity": {
+      "none": "Normal",
+      "mild": "Léger",
+      "moderate": "Modéré",
+      "severe": "Sévère"
+    },
+    "risk": {
+      "low": "Risque global : Faible",
+      "medium": "Risque global : Modéré",
+      "high": "Risque global : Élevé",
+      "critical": "Risque global : Critique"
+    }
+  },
+  "errors": {
+    "not_pdf": "Veuillez télécharger un fichier PDF",
+    "too_large": "Le fichier dépasse la limite de 10 Mo",
+    "upload_failed": "Échec du téléchargement. Veuillez réessayer.",
+    "no_tests": "Aucune analyse trouvée dans ce PDF",
+    "generic": "Une erreur est survenue. Veuillez réessayer."
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "ar": "العربية",
+    "vi": "Tiếng Việt"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "title": "Labs Analyzer",
+  "tagline": "Hiểu kết quả xét nghiệm của bạn ngay lập tức",
+  "upload": {
+    "heading": "Tải lên phiếu xét nghiệm",
+    "drag": "Kéo & thả file PDF vào đây",
+    "or": "hoặc",
+    "browse": "Chọn file",
+    "hint": "Chỉ PDF · Tối đa 10 MB",
+    "analyzing": "Đang phân tích...",
+    "submit": "Phân tích kết quả",
+    "language_label": "Ngôn ngữ của phiếu"
+  },
+  "progress": {
+    "queued": "Đang chờ xử lý...",
+    "extracting": "Đang đọc phiếu xét nghiệm...",
+    "normalizing": "Đang chuẩn hóa giá trị...",
+    "analyzing": "Đang phân tích lâm sàng...",
+    "explaining": "Đang tạo giải thích...",
+    "qa_check": "Đang kiểm tra chất lượng...",
+    "done": "Phân tích hoàn tất",
+    "failed": "Phân tích thất bại"
+  },
+  "results": {
+    "summary_heading": "Tóm tắt kết quả",
+    "tests_heading": "Kết quả chi tiết",
+    "urgent_heading": "Cần hành động ngay",
+    "total_tests": "Tổng xét nghiệm",
+    "abnormal": "Bất thường",
+    "critical": "Nguy hiểm",
+    "qa_score": "Điểm QA",
+    "processing_time": "Thời gian xử lý",
+    "disclaimer_heading": "Lưu ý quan trọng",
+    "print": "In kết quả",
+    "new_report": "Phân tích phiếu khác",
+    "expand": "Xem giải thích",
+    "collapse": "Thu gọn",
+    "confidence": "Độ tin cậy",
+    "reference": "Khoảng tham chiếu",
+    "your_value": "Giá trị của bạn",
+    "next_steps": "Cần làm gì",
+    "urgency": {
+      "routine": "Bình thường",
+      "soon": "Gặp bác sĩ sớm",
+      "urgent": "Gặp bác sĩ gấp",
+      "emergency": "Đến cấp cứu ngay"
+    },
+    "severity": {
+      "none": "Bình thường",
+      "mild": "Nhẹ",
+      "moderate": "Trung bình",
+      "severe": "Nghiêm trọng"
+    },
+    "risk": {
+      "low": "Nguy cơ tổng thể: Thấp",
+      "medium": "Nguy cơ tổng thể: Trung bình",
+      "high": "Nguy cơ tổng thể: Cao",
+      "critical": "Nguy cơ tổng thể: Nguy hiểm"
+    }
+  },
+  "errors": {
+    "not_pdf": "Vui lòng tải lên file PDF",
+    "too_large": "File vượt quá giới hạn 10 MB",
+    "upload_failed": "Tải lên thất bại. Vui lòng thử lại.",
+    "no_tests": "Không tìm thấy xét nghiệm nào trong PDF này",
+    "generic": "Đã xảy ra lỗi. Vui lòng thử lại."
+  },
+  "languages": {
+    "en": "English",
+    "fr": "Français",
+    "ar": "العربية",
+    "vi": "Tiếng Việt"
+  }
+}
