@@ -15,6 +15,7 @@ import IORedis from "ioredis";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import type { Language } from "@shared/types";
+import { runMigrations } from "./lib/db";
 
 const app = Fastify({
   logger: { transport: { target: "pino-pretty" } },
@@ -176,6 +177,8 @@ const analysisQueue = new Queue("lab-analysis", {
   const port = parseInt(process.env.PORT ?? "3001");
 
   try {
+    // Auto-migrate: create tables if they don't exist yet
+    await runMigrations();
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`[Server] Labs Analyzer API running on port ${port}`);
   } catch (err) {

@@ -9,18 +9,19 @@ WORKDIR /app
 # Copy root configurations (for pnpm workspaces)
 COPY package.json pnpm-workspace.yaml ./
 COPY backend/package.json backend/
-
-# Only install dependencies first (leverage Docker cache)
-RUN pnpm install --frozen-lockfile || pnpm install
-
-# Copy source code using workspace context
-COPY backend/ backend/
 COPY shared/ shared/
 
-# Build the backend
-RUN pnpm --filter labs-analyzer-backend build
+# Install ALL deps (including devDeps like typescript, @types/node)
+# --shamefully-hoist ensures binaries and modules are accessible from workspace root
+RUN pnpm install --no-frozen-lockfile --shamefully-hoist
 
-# Runner stage
+# Copy backend source code
+COPY backend/ backend/
+
+# Build: tsc now finds all modules because they're hoisted to /app/node_modules
+RUN /app/node_modules/.bin/tsc -p backend/tsconfig.json
+
+# ── Runner stage ──────────────────────────────────────────────
 FROM node:22-alpine AS runner
 WORKDIR /app
 
@@ -29,12 +30,12 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-workspace.yaml ./
 COPY backend/package.json backend/
 
-# Install only production dependencies
-# Since pnpm workspace requires the whole workspace, we just install normally
-RUN pnpm install --prod
+# Install only production dependencies (hoisted so node can find them)
+RUN pnpm install --prod --no-frozen-lockfile --shamefully-hoist
 
-# Copy built artifacts from builder
-COPY --from=builder /app/backend/dist ./dist
+# Copy built artifacts and schema
+COPY --from=builder /app/backend/dist ./backend/dist
+COPY backend/schema.sql ./backend/schema.sql
 
 # Defaults to running the api
-CMD ["node", "dist/backend/src/index.js"]
+CMD ["node", "backend/dist/backend/src/index.js"]

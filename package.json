@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm --filter labs-analyzer-backend dev\" \"pnpm --filter labs-analyzer-backend worker\" \"pnpm --filter labs-analyzer-frontend dev\"",
+    "dev": "concurrently \"pnpm --filter labs-analyzer-frontend dev\" \"pnpm --filter labs-analyzer-backend dev\" \"pnpm --filter labs-analyzer-backend worker\"",
+    "dev:fe": "pnpm --filter labs-analyzer-frontend dev",
     "build": "pnpm --filter labs-analyzer-backend build && pnpm --filter labs-analyzer-frontend build",
-    "db:migrate": "pnpm --filter labs-analyzer-backend migrate"
+    "docker:be": "docker-compose -f backend/docker-compose.yml up --build -d",
+    "docker:be:down": "docker-compose -f backend/docker-compose.yml down",
+    "docker:be:logs": "docker-compose -f backend/docker-compose.yml logs -f",
+    "db:migrate": "docker exec labs-analyzer-postgres psql -U postgres -d labs_analyzer -f /tmp/schema.sql"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

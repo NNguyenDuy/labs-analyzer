@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -30,7 +28,7 @@ services:
 
   api:
     build:
-      context: .
+      context: ..
       dockerfile: backend/Dockerfile
       target: runner
     container_name: labs-analyzer-api
@@ -45,18 +43,20 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/labs_analyzer
+      - DATABASE_SSL=false
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
     env_file:
-      - backend/.env
+      - .env
 
   worker:
     build:
-      context: .
+      context: ..
       dockerfile: backend/Dockerfile
       target: runner
     container_name: labs-analyzer-worker
-    command: ["node", "dist/backend/src/worker.js"]
+    command: ["node", "backend/dist/backend/src/worker.js"]
     restart: on-failure
     depends_on:
       postgres:
@@ -66,25 +66,12 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/labs_analyzer
+      - DATABASE_SSL=false
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_URL=redis://redis:6379
     env_file:
-      - backend/.env
-
-  web:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: labs-analyzer-web
-    restart: on-failure
-    depends_on:
-      - api
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3001
-    env_file:
-      - frontend/.env.local
+      - .env
 
 volumes:
   postgres_data:

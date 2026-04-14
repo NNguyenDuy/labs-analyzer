@@ -6,6 +6,8 @@
 
 import { Pool } from "pg";
 import * as dotenv from "dotenv";
+import { readFileSync } from "fs";
+import { join } from "path";
 dotenv.config();
 
 // Connection pool — Neon works best with pool size 1-5
@@ -14,14 +16,93 @@ const pool = new Pool({
   max: 5,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
-  ssl: process.env.NODE_ENV === "production"
-    ? { rejectUnauthorized: false }
-    : false,
+  ssl: process.env.DATABASE_SSL === "false"
+    ? false
+    : process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
 });
 
 pool.on("error", (err) => {
   console.error("[DB] Unexpected pool error:", err.message);
 });
+
+// ── Auto-migration ─────────────────────────────────────────────
+// Runs schema.sql on startup — safe to run multiple times (IF NOT EXISTS)
+
+export async function runMigrations(): Promise<void> {
+  // Try multiple paths to support both dev (tsx) and prod (compiled dist) environments
+  const candidates = [
+    join(__dirname, "..", "..", "..", "schema.sql"),          // dev: src/lib -> backend/schema.sql
+    join(__dirname, "..", "..", "..", "..", "schema.sql"),    // compiled: dist/backend/src/lib -> backend/schema.sql
+    join(process.cwd(), "backend", "schema.sql"),            // docker: /app/backend/schema.sql
+    join(process.cwd(), "schema.sql"),                       // fallback: /app/schema.sql
+  ];
+
+  let sql: string | null = null;
+  for (const p of candidates) {
+    try {
+      sql = readFileSync(p, "utf-8");
+      break;
+    } catch {
+      // try next path
+    }
+  }
+
+  if (!sql) {
+    throw new Error(`[DB] Cannot find schema.sql. Tried: ${candidates.join(", ")}`);
+  }
+
+  // Smart split: split by ";" but keep $$ dollar-quoted PL/pgSQL blocks intact
+  const statements = splitSqlStatements(sql);
+
+  for (const stmt of statements) {
+    try {
+      await pool.query(stmt);
+    } catch (err: any) {
+      // 42710 = duplicate_object (trigger already exists) — safe to ignore
+      // 42P07 = duplicate_table
+      if (err?.code === "42710" || err?.code === "42P07") continue;
+      throw err;
+    }
+  }
+  console.log("[DB] Migrations applied ✓");
+}
+
+/**
+ * Splits a SQL file into individual statements, keeping $$ dollar-quoted
+ * blocks (used in PL/pgSQL functions) intact.
+ */
+function splitSqlStatements(sql: string): string[] {
+  const stmts: string[] = [];
+  let current = "";
+  let inDollarQuote = false;
+
+  // Process line by line
+  for (const line of sql.split("\n")) {
+    const trimmed = line.trim();
+    // Toggle dollar-quote state
+    const dollarMatches = (line.match(/\$\$/g) || []).length;
+    if (dollarMatches % 2 !== 0) {
+      inDollarQuote = !inDollarQuote;
+    }
+
+    current += line + "\n";
+
+    // Only split on semicolons outside of dollar-quoted blocks
+    if (!inDollarQuote && trimmed.endsWith(";")) {
+      const stmt = current.replace(/--[^\n]*/g, "").trim().replace(/;$/, "").trim();
+      if (stmt.length > 0) stmts.push(stmt);
+      current = "";
+    }
+  }
+
+  // Flush any remaining content
+  const last = current.replace(/--[^\n]*/g, "").trim().replace(/;$/, "").trim();
+  if (last.length > 0) stmts.push(last);
+
+  return stmts;
+}
 
 // ── Job operations ────────────────────────────────────────────
 
