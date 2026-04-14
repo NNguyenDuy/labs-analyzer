@@ -15,9 +15,8 @@
     "queued": "En attente...",
     "extracting": "Lecture du bilan...",
     "normalizing": "Standardisation des valeurs...",
-    "analyzing": "Analyse clinique...",
-    "explaining": "Génération des explications...",
-    "qa_check": "Vérification qualité...",
+    "analyzing": "Analyse et génération des explications...",
+    "qa_check": "Finalisation des résultats...",
     "done": "Analyse terminée",
     "failed": "Analyse échouée"
   },

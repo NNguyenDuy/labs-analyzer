@@ -3,19 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter backend worker\" \"pnpm --filter frontend dev\"",
-    "build": "pnpm --filter backend build && pnpm --filter frontend build",
-    "typecheck": "pnpm --filter backend typecheck && pnpm --filter frontend typecheck",
-    "db:migrate": "psql $DATABASE_URL -f backend/schema.sql",
-    "test": "pnpm --filter backend test",
-    "qa:en": "tsx backend/tests/qa-runner.ts backend/tests/samples/en-report.pdf en",
-    "qa:vi": "tsx backend/tests/qa-runner.ts backend/tests/samples/vi-report.pdf vi",
-    "qa:fr": "tsx backend/tests/qa-runner.ts backend/tests/samples/fr-report.pdf fr",
-    "qa:ar": "tsx backend/tests/qa-runner.ts backend/tests/samples/ar-report.pdf ar",
-    "samples": "tsx backend/tests/generate-samples.ts"
+    "dev": "concurrently \"pnpm --filter labs-analyzer-backend dev\" \"pnpm --filter labs-analyzer-backend worker\" \"pnpm --filter labs-analyzer-frontend dev\"",
+    "build": "pnpm --filter labs-analyzer-backend build && pnpm --filter labs-analyzer-frontend build",
+    "db:migrate": "pnpm --filter labs-analyzer-backend migrate"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "tsx": "^4.16.2"
+    "typescript": "^5.5.3"
   }
 }

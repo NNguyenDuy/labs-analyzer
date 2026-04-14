@@ -3,7 +3,7 @@
 // Used in tests only
 // ============================================================
 
-import type { Severity } from "../../shared/types";
+import type { Severity } from "@shared/types";
 
 export const SEVERITY_CONFIG: Record<Severity, { label: string; color: string }> = {
   none:     { label: "Normal",   color: "green"  },

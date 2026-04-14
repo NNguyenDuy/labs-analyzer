@@ -16,7 +16,6 @@ export type JobStatus =
   | "extracting"
   | "normalizing"
   | "analyzing"
-  | "explaining"
   | "qa_check"
   | "done"
   | "failed";
@@ -90,6 +89,8 @@ export interface ExplainedLabTest {
   next_steps: string;           // hành động cụ thể bệnh nhân cần làm
   urgency: Urgency;
   confidence: number;
+  loinc_code?: string;
+  clinical_significance?: string;
 }
 
 export interface Agent4Output {
@@ -115,7 +116,29 @@ export interface Agent5Output {
   qa_score: number;              // 0-100
 }
 
-// ─── Final Result (stored in DB + returned to frontend) ──────
+// ─── Agent 3+4 Combined Output (merged analyze + explain) ────
+export interface CombinedLabTest extends ExplainedLabTest {
+  // Clinical analysis fields (from Agent3)
+  value: number | null;
+  unit_si: string;
+  value_si: number | null;
+  ref_min_si: number | null;
+  ref_max_si: number | null;
+  who_category: string;
+  clinical_significance: string;
+}
+
+export interface Agent34Output {
+  language: Language;
+  overall_risk: "low" | "medium" | "high" | "critical";
+  critical_flags: string[];
+  tests: CombinedLabTest[];
+  overall_summary: string;
+  urgent_actions: string[];
+  disclaimer: string;
+}
+
+
 export interface LabAnalysisResult {
   job_id: string;
   language: Language;

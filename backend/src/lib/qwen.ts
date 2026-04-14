@@ -15,7 +15,7 @@ export const qwenClient = new OpenAI({
 
 // Models available
 export const MODELS = {
-  LONG: "qwen-long",       // Dùng cho extraction (xử lý PDF dài)
+  LONG: "qwen-plus",       // Dùng cho extraction (thay qwen-long bằng qwen-plus cho server quốc tế)
   PLUS: "qwen-plus",       // Dùng cho analysis và explanation
   VL: "qwen-vl-max",       // Dùng cho scanned PDF (vision)
 } as const;
@@ -120,4 +120,75 @@ export function parseJsonResponse<T>(content: string, agentName: string): T {
         `Parse error: ${err}`
     );
   }
+}
+
+/**
+ * Gọi Qwen VL (vision) với một hoặc nhiều ảnh base64 + text prompt
+ * Dùng cho scanned PDF — OCR qua vision model
+ */
+export async function qwenVisionChat(options: {
+  images: string[];         // base64 PNG strings (không có data: prefix)
+  systemPrompt: string;
+  userText: string;
+  traceId?: string;
+  traceName?: string;
+  maxTokens?: number;
+  temperature?: number;
+}): Promise<ChatResult> {
+  const {
+    images,
+    systemPrompt,
+    userText,
+    traceId,
+    traceName = "VisionChat",
+    maxTokens = 4000,
+    temperature = 0.0,
+  } = options;
+
+  const startTime = Date.now();
+  let lastError: Error | null = null;
+
+  // Build multimodal content: images first, then text
+  const imageContent = images.map((b64) => ({
+    type: "image_url" as const,
+    image_url: { url: `data:image/png;base64,${b64}` },
+  }));
+
+  const userContent = [
+    ...imageContent,
+    { type: "text" as const, text: userText },
+  ];
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const response = await qwenClient.chat.completions.create({
+        model: MODELS.VL,
+        max_tokens: maxTokens,
+        temperature,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userContent },
+        ],
+      });
+
+      const content = response.choices[0]?.message?.content ?? "";
+      const usage = response.usage ?? {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0,
+      };
+      const latency_ms = Date.now() - startTime;
+
+      console.log(`[${traceName}] model=${MODELS.VL} tokens=${usage.total_tokens} latency=${latency_ms}ms traceId=${traceId} images=${images.length}`);
+      return { content, usage, latency_ms };
+    } catch (err) {
+      lastError = err as Error;
+      console.error(`[${traceName}] attempt ${attempt} failed:`, err);
+      if (attempt < 3) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
+      }
+    }
+  }
+
+  throw new Error(`Qwen Vision API failed after 3 attempts: ${lastError?.message}`);
 }

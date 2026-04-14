@@ -15,9 +15,8 @@
     "queued": "Queued for processing...",
     "extracting": "Reading your lab report...",
     "normalizing": "Standardizing values...",
-    "analyzing": "Performing clinical analysis...",
-    "explaining": "Generating your summary...",
-    "qa_check": "Running quality check...",
+    "analyzing": "Analyzing and generating your summary...",
+    "qa_check": "Finalizing results...",
     "done": "Analysis complete",
     "failed": "Analysis failed"
   },

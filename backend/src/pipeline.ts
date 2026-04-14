@@ -1,19 +1,19 @@
 // ============================================================
-// Pipeline Orchestrator — v2 (with DB + cache)
+// Pipeline Orchestrator — v3 (optimized: 5 LLM calls → 2-3)
+// Agent3 + Agent4 merged, Agent5 rule-based (no LLM)
 // ============================================================
 
 import pdfParse from "pdf-parse";
-import { runAgent1 } from "./agents/agent1-extractor";
+import { runAgent1, runAgent1Vision } from "./agents/agent1-extractor";
 import { runAgent2 } from "./agents/agent2-normalizer";
-import { runAgent3 } from "./agents/agent3-analyzer";
-import { runAgent4 } from "./agents/agent4-explainer";
-import { runAgent5 } from "./agents/agent5-qa";
+import { runAgent34 } from "./agents/agent3-4-combined";
+import { runAgent5RuleBased } from "./agents/agent5-qa";
 import {
   createJob, updateJobStatus, saveResult,
   findCachedResult, logAudit
 } from "./lib/db";
-import { hashBuffer, isLikelyScanned, cleanPdfText, extractLabSection } from "./lib/fileUtils";
-import type { Language, LabAnalysisResult, JobStatus } from "../shared/types";
+import { hashBuffer, isLikelyScanned, cleanPdfText, extractLabSection, pdfToImages } from "./lib/fileUtils";
+import type { Language, LabAnalysisResult, JobStatus } from "@shared/types";
 
 export interface PipelineOptions {
   jobId: string;
@@ -46,12 +46,14 @@ export async function runPipeline(options: PipelineOptions): Promise<LabAnalysis
   let rawText: string;
   let pdfPages = 1;
 
+  let isScanned = false;
   try {
     const parsed = await pdfParse(pdfBuffer);
     rawText = cleanPdfText(parsed.text);
     pdfPages = parsed.numpages;
-    if (isLikelyScanned(rawText, pdfBuffer.length)) {
-      console.warn(`[Pipeline] Job ${jobId}: PDF may be scanned`);
+    isScanned = isLikelyScanned(rawText, pdfBuffer.length);
+    if (isScanned) {
+      console.warn(`[Pipeline] Job ${jobId}: PDF may be scanned — will use vision model`);
     }
   } catch (err) {
     await updateJobStatus(jobId, "failed", 0, "Failed", `PDF parse error: ${err}`);
@@ -60,12 +62,29 @@ export async function runPipeline(options: PipelineOptions): Promise<LabAnalysis
 
   const pdfText = extractLabSection(rawText);
 
-  // Agent 1
+  // Agent 1: text path or vision path for scanned PDFs
   await onProgress("extracting", 18, "Extracting lab values...");
   await logAudit(jobId, "agent_start", "agent1");
   const t1 = Date.now();
-  const agent1Result = await runAgent1(pdfText, jobId);
-  modelsUsed.push("qwen-long");
+
+  let agent1Result;
+  if (isScanned || pdfText.trim().length < 50) {
+    // Scanned PDF — convert pages to images and use Qwen VL
+    await onProgress("extracting", 20, "Rendering PDF pages for OCR...");
+    console.log(`[Pipeline] Job ${jobId}: using vision OCR (text=${pdfText.trim().length} chars)`);
+    const images = await pdfToImages(pdfBuffer, 8);
+    if (images.length === 0) {
+      const msg = "Could not render PDF pages for OCR.";
+      await updateJobStatus(jobId, "failed", 0, "Failed", msg);
+      throw new Error(msg);
+    }
+    agent1Result = await runAgent1Vision(images, jobId);
+    modelsUsed.push("qwen-vl-max");
+  } else {
+    agent1Result = await runAgent1(pdfText, jobId, language);
+    modelsUsed.push("qwen-plus");
+  }
+
   await logAudit(jobId, "agent_done", "agent1", undefined, Date.now() - t1, { tests_found: agent1Result.tests.length });
 
   if (agent1Result.tests.length === 0) {
@@ -82,26 +101,17 @@ export async function runPipeline(options: PipelineOptions): Promise<LabAnalysis
   modelsUsed.push("qwen-plus");
   await logAudit(jobId, "agent_done", "agent2", undefined, Date.now() - t2);
 
-  // Agent 3
-  await onProgress("analyzing", 52, "Performing clinical analysis...");
-  await logAudit(jobId, "agent_start", "agent3");
-  const t3 = Date.now();
-  const agent3Result = await runAgent3(agent2Result, jobId);
-  await logAudit(jobId, "agent_done", "agent3", undefined, Date.now() - t3, { overall_risk: agent3Result.overall_risk });
+  // Agent 3+4 (merged): clinical analysis + patient explanations in one LLM call
+  await onProgress("analyzing", 52, `Analyzing and generating ${language.toUpperCase()} explanations...`);
+  await logAudit(jobId, "agent_start", "agent34");
+  const t34 = Date.now();
+  const agent34Result = await runAgent34(agent2Result, language, jobId);
+  modelsUsed.push("qwen-plus");
+  await logAudit(jobId, "agent_done", "agent34", undefined, Date.now() - t34, { overall_risk: agent34Result.overall_risk });
 
-  // Agent 4
-  await onProgress("explaining", 70, `Generating ${language.toUpperCase()} explanations...`);
-  await logAudit(jobId, "agent_start", "agent4");
-  const t4 = Date.now();
-  const agent4Result = await runAgent4(agent3Result, language, jobId);
-  await logAudit(jobId, "agent_done", "agent4", undefined, Date.now() - t4);
-
-  // Agent 5
-  await onProgress("qa_check", 88, "Running quality check...");
-  await logAudit(jobId, "agent_start", "agent5");
-  const t5 = Date.now();
-  const agent5Result = await runAgent5(agent4Result, agent3Result, jobId);
-  await logAudit(jobId, "agent_done", "agent5", undefined, Date.now() - t5, { qa_score: agent5Result.qa_score });
+  // Agent 5: rule-based QA (no LLM — instant)
+  await onProgress("qa_check", 90, "Running quality check...");
+  const agent5Result = runAgent5RuleBased(agent34Result, jobId);
 
   const processingTime = Date.now() - startTime;
 
@@ -113,8 +123,8 @@ export async function runPipeline(options: PipelineOptions): Promise<LabAnalysis
     overall_summary: agent5Result.validated_output.overall_summary,
     urgent_actions: agent5Result.validated_output.urgent_actions,
     disclaimer: agent5Result.validated_output.disclaimer,
-    overall_risk: agent3Result.overall_risk,
-    critical_flags: agent3Result.critical_flags,
+    overall_risk: agent34Result.overall_risk,
+    critical_flags: agent34Result.critical_flags,
     qa_score: agent5Result.qa_score,
     metadata: {
       processing_time_ms: processingTime,

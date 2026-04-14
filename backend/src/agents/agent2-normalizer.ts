@@ -6,7 +6,7 @@
 
 import { qwenChat, parseJsonResponse, MODELS } from "../lib/qwen";
 import { findReference, getRelevantReferences } from "../lib/medicalKb";
-import type { Agent1Output, Agent2Output, NormalizedLabTest } from "../../shared/types";
+import type { Agent1Output, Agent2Output, NormalizedLabTest } from "@shared/types";
 
 export async function runAgent2(
   agent1Output: Agent1Output,

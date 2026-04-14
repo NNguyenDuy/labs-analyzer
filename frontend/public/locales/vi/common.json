@@ -15,9 +15,8 @@
     "queued": "Đang chờ xử lý...",
     "extracting": "Đang đọc phiếu xét nghiệm...",
     "normalizing": "Đang chuẩn hóa giá trị...",
-    "analyzing": "Đang phân tích lâm sàng...",
-    "explaining": "Đang tạo giải thích...",
-    "qa_check": "Đang kiểm tra chất lượng...",
+    "analyzing": "Đang phân tích và tạo giải thích...",
+    "qa_check": "Đang hoàn thiện kết quả...",
     "done": "Phân tích hoàn tất",
     "failed": "Phân tích thất bại"
   },

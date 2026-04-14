@@ -10,7 +10,7 @@ dotenv.config();
 import { Worker, Job } from "bullmq";
 import IORedis from "ioredis";
 import { runPipeline } from "./pipeline";
-import type { Language, JobStatus } from "../shared/types";
+import type { Language, JobStatus } from "@shared/types";
 
 const redis = new IORedis(process.env.REDIS_URL!, { maxRetriesPerRequest: null });
 

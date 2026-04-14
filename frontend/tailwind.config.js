@@ -7,18 +7,23 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+      },
       colors: {
         severity: {
-          none:     { DEFAULT: "#16a34a", bg: "#f0fdf4", border: "#86efac" },
-          mild:     { DEFAULT: "#ca8a04", bg: "#fefce8", border: "#fde047" },
-          moderate: { DEFAULT: "#ea580c", bg: "#fff7ed", border: "#fdba74" },
-          severe:   { DEFAULT: "#dc2626", bg: "#fef2f2", border: "#fca5a5" },
+          none:     { DEFAULT: "#34d399", bg: "rgba(52,211,153,.08)",  border: "rgba(52,211,153,.2)" },
+          mild:     { DEFAULT: "#fbbf24", bg: "rgba(251,191,36,.08)",  border: "rgba(251,191,36,.2)" },
+          moderate: { DEFAULT: "#fb923c", bg: "rgba(251,146,60,.08)",  border: "rgba(251,146,60,.2)" },
+          severe:   { DEFAULT: "#f87171", bg: "rgba(248,113,113,.08)", border: "rgba(248,113,113,.25)" },
         },
       },
-      fontFamily: {
-        sans: ["Inter", "sans-serif"],
+      animation: {
+        "fade-in": "fadeIn 0.4s ease forwards",
+        "pulse-glow": "pulseGlow 2s ease-in-out infinite",
       },
     },
   },
   plugins: [],
 };
+
