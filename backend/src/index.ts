@@ -36,9 +36,17 @@ const analysisQueue = new Queue("lab-analysis", {
 // ── Plugins ───────────────────────────────────────────────────
 (async () => {
   await app.register(cors, {
-    origin: process.env.NODE_ENV === "production"
-      ? ["https://labs-analyzer.vercel.app"]
-      : true,
+    origin: (origin, cb) => {
+      // Allow if no origin (server-to-server, mobile apps)
+      if (!origin) return cb(null, true);
+      const allowed = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://labs-analyzer.vercel.app",
+        ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : []),
+      ];
+      cb(null, allowed.includes(origin));
+    },
     credentials: true,
   });
 

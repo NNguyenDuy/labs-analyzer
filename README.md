@@ -30,10 +30,9 @@ labs-analyzer/
 │   ├── schema.sql            # DB schema (idempotent, IF NOT EXISTS)
 │   └── Dockerfile
 ├── frontend/                 # Next.js web app
-│   ├── src/
-│   │   ├── pages/            # index.tsx (main app)
-│   │   └── components/       # UploadZone, ProgressTracker, TestCard, ResultsPanel
-│   └── Dockerfile
+│   └── src/
+│       ├── pages/            # index.tsx (main app)
+│       └── components/       # UploadZone, ProgressTracker, TestCard, ResultsPanel
 ├── shared/                   # Shared TypeScript types (full-stack type safety)
 ├── package.json              # Root scripts
 └── pnpm-workspace.yaml
@@ -58,73 +57,50 @@ PDF Upload → [Agent 1] Extract → [Agent 2] Normalize → [Agent 3+4] Analyze
 
 ### Prerequisites
 
-- [Docker Desktop](https://www.docker.com/) (for the backend stack)
-- [Node.js 20+](https://nodejs.org/) + `pnpm` (for local frontend dev)
+- [Docker Desktop](https://www.docker.com/)
+- [Node.js 20+](https://nodejs.org/) + `pnpm`
 
 ```bash
 npm install -g pnpm
+pnpm install
 ```
-
-> [!IMPORTANT]
-> Do **NOT** run `docker-compose up` directly from the project root — it won't work.
-> Always use the `pnpm` scripts below which point to the correct compose file at `backend/docker-compose.yml`.
-
----
 
 ### ⚙️ Environment Setup
 
-Copy and fill in your API keys:
-
 ```bash
 cp backend/.env.example backend/.env
-```
-
-Key variables in `backend/.env`:
-
-```env
-QWEN_API_KEY=your-key-here          # or OpenAI-compatible key
-REDIS_URL=redis://localhost:6379
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/labs_analyzer
-PORT=3001
+# Điền QWEN_API_KEY vào backend/.env
 ```
 
 ---
 
-### 🐳 Step 1 — Start the Backend (Docker)
+## 🐳 Recommended Workflow (Docker BE + Local FE)
 
-Starts **Postgres + Redis + API + Worker** and **auto-migrates the DB** on first run:
+> [!IMPORTANT]
+> `pnpm docker:be` chạy toàn bộ Backend trong Docker **(postgres + redis + api + worker)**.
+> `pnpm dev` chỉ chạy Frontend. **Không chạy cả hai cùng lúc** để tránh xung đột port.
+
+### Bước 1 — Start Backend (Docker)
 
 ```bash
 pnpm docker:be
 ```
 
-> ✅ No manual migration needed — `schema.sql` is applied automatically (idempotent, safe to re-run).
-
-Other backend commands:
+✅ Tự động: build image, migrate DB, khởi động api (`:3001`) + worker.
 
 ```bash
-pnpm docker:be:down    # Stop all backend containers
-pnpm docker:be:logs    # Stream logs from api + worker
+pnpm docker:be:down    # Dừng
+pnpm docker:be:logs    # Xem logs
 ```
 
----
-
-### 💻 Step 2 — Start the Full Stack (Dev Mode)
-
-With Docker backend running, start the frontend + hot-reload in watch mode:
+### Bước 2 — Start Frontend
 
 ```bash
 pnpm dev
+# → http://localhost:3000
 ```
 
-This runs 3 processes in parallel:
-- `[0]` **Frontend** → `http://localhost:3000` (Next.js dev server)
-- `[1]` **API** → `http://localhost:3001` (`tsx watch`)
-- `[2]` **Worker** → Background job processor (`tsx watch`)
-
----
-
-### 🏁 One-liner (after first setup)
+### One-liner
 
 ```bash
 pnpm docker:be && pnpm dev
@@ -132,17 +108,33 @@ pnpm docker:be && pnpm dev
 
 ---
 
-## 📋 All Available Scripts
+## 💻 Alternative: Run Everything Locally (No Docker)
+
+Nếu đã có PostgreSQL và Redis trên máy:
+
+```bash
+pnpm dev:local
+```
+
+Chạy song song:
+- `[0]` Frontend → `http://localhost:3000`
+- `[1]` API → `http://localhost:3001`
+- `[2]` Worker → Background processor
+
+---
+
+## 📋 All Scripts
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start full stack in dev/watch mode |
+| `pnpm dev` | Start **FE only** (dùng khi BE chạy qua Docker) |
+| `pnpm dev:local` | Start FE + BE + Worker locally (không cần Docker) |
 | `pnpm build` | Build backend + frontend for production |
 | `pnpm docker:be` | Start Docker backend (postgres + redis + api + worker) |
-| `pnpm docker:be:down` | Stop Docker backend containers |
+| `pnpm docker:be:down` | Stop Docker backend |
 | `pnpm docker:be:logs` | Stream Docker backend logs |
 
-
+---
 
 ## 🛠️ Built With
 

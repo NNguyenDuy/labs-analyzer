@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm --filter labs-analyzer-frontend dev\" \"pnpm --filter labs-analyzer-backend dev\" \"pnpm --filter labs-analyzer-backend worker\"",
-    "dev:fe": "pnpm --filter labs-analyzer-frontend dev",
+    "dev": "pnpm --filter labs-analyzer-frontend dev",
+    "dev:local": "concurrently \"pnpm --filter labs-analyzer-frontend dev\" \"pnpm --filter labs-analyzer-backend dev\" \"pnpm --filter labs-analyzer-backend worker\"",
     "build": "pnpm --filter labs-analyzer-backend build && pnpm --filter labs-analyzer-frontend build",
     "docker:be": "docker-compose -f backend/docker-compose.yml up --build -d",
     "docker:be:down": "docker-compose -f backend/docker-compose.yml down",
